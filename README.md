@@ -186,3 +186,9 @@ GET  /dashboard (old admin cookie, post-logout)       -> 302 to /login?error=ses
   forms don't do much beyond `required`/`type` attributes.
 - **No password reset / account management flows.** Only the two seeded demo accounts exist;
   there's no self-service signup, since that wasn't in scope for this demo.
+
+---
+
+## License
+
+MIT.
