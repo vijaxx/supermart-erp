@@ -52,12 +52,17 @@ public class EmployeeDao {
         }
     }
 
-    /** Name search. The term is bound as a parameter even though it is wrapped in wildcards. */
+    /**
+     * Name search. The term is bound as a parameter even though it is wrapped
+     * in wildcards, and matched literally rather than as a wildcard itself --
+     * see {@link LikePatterns}.
+     */
     public List<Employee> searchByName(String term) {
         List<Employee> result = new ArrayList<>();
         try (Connection c = database.getConnection();
-             PreparedStatement ps = c.prepareStatement(SELECT_BASE + " WHERE LOWER(e.full_name) LIKE ? ORDER BY e.full_name")) {
-            ps.setString(1, "%" + term.toLowerCase() + "%");
+             PreparedStatement ps = c.prepareStatement(
+                     SELECT_BASE + " WHERE LOWER(e.full_name) LIKE ? ESCAPE '\\' ORDER BY e.full_name")) {
+            ps.setString(1, LikePatterns.substringMatch(term == null ? null : term.toLowerCase()));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     result.add(map(rs));
