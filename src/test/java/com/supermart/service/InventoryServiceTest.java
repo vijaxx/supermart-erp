@@ -69,6 +69,11 @@ class InventoryServiceTest {
     }
 
     @Test
+    void adjustingStockForUnknownProductIsRejected() {
+        assertThrows(ValidationException.class, () -> inventoryService.adjustStock(-1, 1));
+    }
+
+    @Test
     void creatingProductWithZeroPriceIsRejected() {
         Product product = new Product();
         product.setName("Bad Product");

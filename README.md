@@ -135,7 +135,7 @@ through `<c:out>`.
 `ReportDaoTest` checks these aren't just syntactically valid but numerically correct — e.g. the
 sum of each department's `total_salary` must equal the sum of every individual employee's salary.
 
-## What's tested (60 JUnit 5 tests, `mvn clean test`)
+## What's tested (62 JUnit 5 tests, `mvn clean test`)
 
 | Area | Examples |
 |---|---|
