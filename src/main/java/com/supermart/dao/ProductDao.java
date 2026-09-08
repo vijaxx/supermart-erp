@@ -96,13 +96,21 @@ public class ProductDao {
         }
     }
 
-    /** Relative stock movement (positive = goods received, negative = sold/written off). */
+    /**
+     * Relative stock movement (positive = goods received, negative = sold/written off).
+     * The {@code stock_quantity + ? >= 0} guard makes this atomic: two concurrent calls
+     * that would individually be safe based on a stale read can no longer race each
+     * other into a negative balance, since the check and the write happen in one
+     * statement instead of the caller reading, deciding, then writing separately.
+     */
     public boolean adjustStock(int productId, int delta) {
         try (Connection c = database.getConnection();
              PreparedStatement ps = c.prepareStatement(
-                     "UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?")) {
+                     "UPDATE products SET stock_quantity = stock_quantity + ? "
+                   + "WHERE id = ? AND stock_quantity + ? >= 0")) {
             ps.setInt(1, delta);
             ps.setInt(2, productId);
+            ps.setInt(3, delta);
             return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             throw new DataAccessException("Failed to adjust stock for product " + productId, e);

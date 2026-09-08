@@ -135,7 +135,7 @@ through `<c:out>`.
 `ReportDaoTest` checks these aren't just syntactically valid but numerically correct — e.g. the
 sum of each department's `total_salary` must equal the sum of every individual employee's salary.
 
-## What's tested (62 JUnit 5 tests, `mvn clean test`)
+## What's tested (63 JUnit 5 tests, `mvn clean test`)
 
 | Area | Examples |
 |---|---|
@@ -145,6 +145,7 @@ sum of each department's `total_salary` must equal the sum of every individual e
 | Auth/role enforcement (`AuthFilterTest`, `AdminFilterTest`) | no session → redirect; STAFF on an admin route → 403, request never reaches the servlet; ADMIN → passes through |
 | Business validation (`EmployeeServiceTest`, `InventoryServiceTest`) | salary floor, email format, future joining dates, unknown department/category rejected |
 | Low-stock logic | boundary case (stock == reorder level counts as low), stock cannot go negative |
+| Stock adjustment concurrency (`ProductDaoTest`) | the DAO's own `UPDATE ... WHERE stock_quantity + ? >= 0` guard rejects a negative result atomically, independent of the service-layer pre-check |
 | Report aggregation (`ReportDaoTest`) | per-department salary sum equals total payroll; per-category inventory value sums to the grand total |
 
 Every DAO/service test runs against a **fresh in-memory H2 database per test** (`TestDatabases.fresh()`),

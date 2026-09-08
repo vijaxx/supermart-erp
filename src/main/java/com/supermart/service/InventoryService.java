@@ -84,7 +84,14 @@ public class InventoryService {
             throw new ValidationException("Stock cannot go negative: only "
                     + product.getStockQuantity() + " units of " + product.getName() + " on hand");
         }
-        productDao.adjustStock(productId, delta);
+        // The check above is a fast, friendly-message pre-check against a stale read;
+        // productDao.adjustStock re-checks atomically, so a concurrent adjustment that
+        // slipped in between the read and the write is caught here instead of driving
+        // stock negative.
+        if (!productDao.adjustStock(productId, delta)) {
+            throw new ValidationException("Stock for " + product.getName()
+                    + " changed concurrently; retry the adjustment");
+        }
         return productDao.findById(productId).orElseThrow();
     }
 

@@ -75,6 +75,21 @@ class ProductDaoTest {
     }
 
     @Test
+    void adjustStockGuardsAgainstGoingNegativeAtomically() {
+        // Unlike InventoryService's pre-check, this exercises the DAO's own SQL guard
+        // directly: even without a caller-side check, the UPDATE itself must refuse to
+        // drive stock_quantity below zero, and report the row as unchanged when it does.
+        Product product = productDao.findAll().get(0);
+        int before = product.getStockQuantity();
+
+        boolean applied = productDao.adjustStock(product.getId(), -(before + 1));
+        assertFalse(applied, "guarded update must reject going negative");
+
+        Product reloaded = productDao.findById(product.getId()).orElseThrow();
+        assertEquals(before, reloaded.getStockQuantity(), "stock must be unchanged when the guard rejects the update");
+    }
+
+    @Test
     void deleteRemovesTheRow() {
         Product product = productDao.findAll().get(0);
         assertTrue(productDao.delete(product.getId()));
