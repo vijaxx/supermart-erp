@@ -118,5 +118,11 @@ public class InventoryService {
         if (product.getCategoryId() <= 0 || product.getSupplierId() <= 0) {
             throw new ValidationException("Category and supplier are required");
         }
+        if (categoryDao.findById(product.getCategoryId()).isEmpty()) {
+            throw new ValidationException("Unknown category");
+        }
+        if (supplierDao.findById(product.getSupplierId()).isEmpty()) {
+            throw new ValidationException("Unknown supplier");
+        }
     }
 }

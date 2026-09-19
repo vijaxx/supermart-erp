@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SupplierDao {
 
@@ -31,6 +32,21 @@ public class SupplierDao {
             return result;
         } catch (SQLException e) {
             throw new DataAccessException("Failed to list suppliers", e);
+        }
+    }
+
+    public Optional<Supplier> findById(int id) {
+        try (Connection c = database.getConnection();
+             PreparedStatement ps = c.prepareStatement(
+                     "SELECT id, name, contact_email FROM suppliers WHERE id = ?")) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next()
+                        ? Optional.of(new Supplier(rs.getInt("id"), rs.getString("name"), rs.getString("contact_email")))
+                        : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to load supplier " + id, e);
         }
     }
 

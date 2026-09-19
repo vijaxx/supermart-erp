@@ -98,4 +98,30 @@ class InventoryServiceTest {
         product.setReorderLevel(5);
         assertThrows(ValidationException.class, () -> inventoryService.create(product));
     }
+
+    @Test
+    void creatingProductWithUnknownCategoryIsRejected() {
+        Product product = new Product();
+        product.setName("Ghost Category");
+        product.setSku("GC-001");
+        product.setCategoryId(9999);
+        product.setSupplierId(1);
+        product.setUnitPrice(BigDecimal.TEN);
+        product.setStockQuantity(10);
+        product.setReorderLevel(5);
+        assertThrows(ValidationException.class, () -> inventoryService.create(product));
+    }
+
+    @Test
+    void creatingProductWithUnknownSupplierIsRejected() {
+        Product product = new Product();
+        product.setName("Ghost Supplier");
+        product.setSku("GS-001");
+        product.setCategoryId(1);
+        product.setSupplierId(9999);
+        product.setUnitPrice(BigDecimal.TEN);
+        product.setStockQuantity(10);
+        product.setReorderLevel(5);
+        assertThrows(ValidationException.class, () -> inventoryService.create(product));
+    }
 }
