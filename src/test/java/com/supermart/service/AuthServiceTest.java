@@ -83,4 +83,38 @@ class AuthServiceTest {
         assertTrue(authService.authenticate("", "").isEmpty());
         assertTrue(authService.authenticate(null, null).isEmpty());
     }
+
+    /**
+     * Regression guard for a timing side-channel: authenticate() used to return immediately for
+     * an unknown username but run the full ~120k-iteration PBKDF2 check for a wrong password on a
+     * real account, so measuring response time alone could tell an attacker which usernames exist
+     * -- even though both responses look identical. An unknown username must now pay the same KDF
+     * cost, via a dummy hash, so the two paths take comparable time.
+     *
+     * <p>Uses a generous ratio (not an absolute margin) so it isn't flaky under CI/CPU jitter: the
+     * old, unguarded behaviour returned near-instantly (a few microseconds) for an unknown
+     * username against a ~100ms+ PBKDF2 check, which this threshold would have failed by a wide
+     * margin.
+     */
+    @Test
+    void unknownUsernameTakesComparableTimeToAWrongPasswordOnARealAccount() {
+        // Warm up the JIT/JVM so the first real measurement isn't skewed by class loading.
+        authService.authenticate("admin", "wrong-password");
+        authService.authenticate("nobody", "whatever");
+
+        long knownUserNanos = timeAuthenticate("admin", "wrong-password");
+        long unknownUserNanos = timeAuthenticate("nobody", "whatever");
+
+        assertTrue(
+                unknownUserNanos >= knownUserNanos / 2,
+                "unknown-username rejection (" + unknownUserNanos
+                        + "ns) should take comparable time to a wrong password on a real account ("
+                        + knownUserNanos + "ns), not return early");
+    }
+
+    private long timeAuthenticate(String username, String password) {
+        long start = System.nanoTime();
+        authService.authenticate(username, password);
+        return System.nanoTime() - start;
+    }
 }

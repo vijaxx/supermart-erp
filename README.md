@@ -135,12 +135,13 @@ through `<c:out>`.
 `ReportDaoTest` checks these aren't just syntactically valid but numerically correct — e.g. the
 sum of each department's `total_salary` must equal the sum of every individual employee's salary.
 
-## What's tested (63 JUnit 5 tests, `mvn clean test`)
+## What's tested (64 JUnit 5 tests, `mvn clean test`)
 
 | Area | Examples |
 |---|---|
 | DAO CRUD (`dao/`) | insert/find/update/delete round-trips for employees, products, users, against a real H2 schema |
 | SQL injection (`AuthServiceTest`) | tautology, comment-truncation, and UNION payloads all fail to authenticate |
+| Login timing side-channel (`AuthServiceTest`) | an unknown username pays the same PBKDF2 cost as a wrong password on a real account, so response time can't be used to enumerate valid usernames |
 | Password hashing (`PasswordHasherTest`) | correct password verifies, wrong password fails, salts differ per hash, malformed hash fails closed |
 | Auth/role enforcement (`AuthFilterTest`, `AdminFilterTest`) | no session → redirect; STAFF on an admin route → 403, request never reaches the servlet; ADMIN → passes through |
 | Business validation (`EmployeeServiceTest`, `InventoryServiceTest`) | salary floor, email format, future joining dates, unknown department/category rejected |
