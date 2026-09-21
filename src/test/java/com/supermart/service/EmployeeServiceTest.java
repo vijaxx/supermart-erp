@@ -74,4 +74,33 @@ class EmployeeServiceTest {
         employee.setFullName("   ");
         assertThrows(ValidationException.class, () -> employeeService.create(employee));
     }
+
+    @Test
+    void creatingASecondEmployeeWithAnAlreadyUsedEmailIsRejected() {
+        employeeService.create(validEmployee());
+
+        Employee duplicate = validEmployee();
+        duplicate.setFullName("Someone Else");
+        assertThrows(ValidationException.class, () -> employeeService.create(duplicate));
+    }
+
+    @Test
+    void updatingAnEmployeeToAnotherEmployeesEmailIsRejected() {
+        Employee first = employeeService.create(validEmployee());
+
+        Employee second = validEmployee();
+        second.setEmail("second.person@supermart.example");
+        second = employeeService.create(second);
+
+        second.setEmail(first.getEmail());
+        Employee toUpdate = second;
+        assertThrows(ValidationException.class, () -> employeeService.update(toUpdate));
+    }
+
+    @Test
+    void updatingAnEmployeeWithoutChangingTheirOwnEmailIsAccepted() {
+        Employee created = employeeService.create(validEmployee());
+        created.setSalary(new BigDecimal("45000"));
+        assertTrue(employeeService.update(created));
+    }
 }

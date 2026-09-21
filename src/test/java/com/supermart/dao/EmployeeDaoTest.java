@@ -76,6 +76,14 @@ class EmployeeDaoTest {
     }
 
     @Test
+    void findByEmailFindsTheMatchingRowAndNothingForAnUnknownAddress() {
+        Employee match = employeeDao.findByEmail("anita.rao@supermart.example").orElseThrow();
+        assertEquals("Anita Rao", match.getFullName());
+
+        assertFalse(employeeDao.findByEmail("nobody@supermart.example").isPresent());
+    }
+
+    @Test
     void searchByNameIsCaseInsensitiveAndPartial() {
         List<Employee> results = employeeDao.searchByName("anita");
         assertEquals(1, results.size());

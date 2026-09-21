@@ -52,6 +52,19 @@ public class EmployeeDao {
         }
     }
 
+    /** Looks up an employee by their (unique) email address - used to reject duplicates pre-insert. */
+    public Optional<Employee> findByEmail(String email) {
+        try (Connection c = database.getConnection();
+             PreparedStatement ps = c.prepareStatement(SELECT_BASE + " WHERE e.email = ?")) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(map(rs)) : Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to look up employee by email " + email, e);
+        }
+    }
+
     /**
      * Name search. The term is bound as a parameter even though it is wrapped
      * in wildcards, and matched literally rather than as a wildcard itself --

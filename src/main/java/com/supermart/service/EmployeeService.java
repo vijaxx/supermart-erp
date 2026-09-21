@@ -67,6 +67,10 @@ public class EmployeeService {
         if (employee.getEmail() == null || !employee.getEmail().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
             throw new ValidationException("A valid email address is required");
         }
+        Optional<Employee> emailOwner = employeeDao.findByEmail(employee.getEmail());
+        if (emailOwner.isPresent() && emailOwner.get().getId() != employee.getId()) {
+            throw new ValidationException("Email is already in use by another employee");
+        }
         if (employee.getSalary() == null || employee.getSalary().compareTo(MINIMUM_SALARY) < 0) {
             throw new ValidationException("Salary must be at least " + MINIMUM_SALARY);
         }
